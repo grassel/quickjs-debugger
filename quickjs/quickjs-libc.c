@@ -54,6 +54,10 @@ typedef sig_t sighandler_t;
 #include "list.h"
 #include "quickjs-libc.h"
 
+#ifdef __ANDROID__
+#include <android/log.h>
+#endif
+
 static void js_std_dbuf_init(JSContext *ctx, DynBuf *s)
 {
     dbuf_init2(s, JS_GetRuntime(ctx), (DynBufReallocFunc *)js_realloc_rt);
@@ -2633,9 +2637,15 @@ static JSValue js_print(JSContext *ctx, JSValueConst this_val,
         str = JS_ToCString(ctx, argv[i]);
         if (!str)
             return JS_EXCEPTION;
+#ifdef __ANDROID__
+        __android_log_print(ANDROID_LOG_VERBOSE, "console", "%s\n", str);
+#endif
         fputs(str, stdout);
         JS_FreeCString(ctx, str);
     }
+#ifdef __ANDROID__
+    __android_log_print(ANDROID_LOG_VERBOSE, "console", "\n");
+#endif
     putchar('\n');
     return JS_UNDEFINED;
 }
